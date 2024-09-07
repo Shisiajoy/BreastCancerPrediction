@@ -1,10 +1,7 @@
-st.experimental_memo.clear()
-
 import streamlit as st
 import tensorflow as tf
 import numpy as np
 from PIL import Image
-import matplotlib.pyplot as plt
 
 # Load the quantized model
 interpreter = tf.lite.Interpreter(model_path='Model/quantized_model.tflite')
@@ -48,35 +45,20 @@ def predict(image):
 
     return prediction_class, prediction_probability
 
-
-def display_layer_activations(image, interpreter, input_details, output_details):
-    # Preprocess the image
-    input_data = preprocess_image(image)
-    
-    # Set input tensor
-    interpreter.set_tensor(input_details[0]['index'], input_data)
-
-    # Run inference
-    interpreter.invoke()
-
-    # Simulate displaying convolution layers
-    # Example: Let's assume we have 3 convolution layers to visualize
-    layer_activations = [input_data[0, :, :, 0]]  # Start with the original grayscale image
-
-    # Manually simulate activations (this part will differ based on your actual layers)
-    for i in range(3):
-        # Simulate a convolution layer by adding a random pattern to the image (for demonstration)
-        layer_activations.append(np.random.rand(150, 150))  # Placeholder for actual layer outputs
-
-    # Display the activations using Streamlit
-    st.write("### Convolution Layer Activations")
-    for i, activation in enumerate(layer_activations):
-        plt.imshow(activation, cmap='gray')
-        st.image(plt, caption=f"Layer {i+1} Activation", use_column_width=True)
-
-
 # Streamlit app structure
 st.title("Breast Cancer Prediction App")
+
+# Explanation of how the app works
+st.info("This app uses a quantized neural network model to predict the presence of breast cancer in mammogram images.")
+
+# Expandable section for more information
+with st.expander("Learn more about how the prediction is made"):
+    st.markdown("""
+    - **Model Details**: The model is a quantized neural network, optimized for inference on edge devices.
+    - **Input Preprocessing**: The uploaded image is resized to 150x150 pixels and converted to grayscale.
+    - **Prediction Threshold**: The model outputs a probability score between 0 and 1. A threshold of 0.5 is used to classify the result as either 'Cancer' or 'No Cancer'.
+    - **Normalization**: Images are normalized to scale pixel values between 0 and 1 before being fed into the model.
+    """)
 
 # Upload image section
 uploaded_file = st.file_uploader("Upload a Mammogram Image", type=["png", "jpg", "jpeg"])
@@ -90,6 +72,9 @@ if uploaded_file is not None:
     if st.button("Predict"):
         prediction_class, prediction_probability = predict(image)
         st.write(f"**Prediction:** {prediction_class} with a probability of {prediction_probability:.2f}")
-        
-        # Visualize intermediate layers
-        display_layer_activations(image, interpreter, input_details, output_details)
+
+        # Provide more context on the result
+        if prediction_class == "Cancer":
+            st.warning("The model detected signs of cancer. Please consult a healthcare professional for further evaluation.")
+        else:
+            st.success("The model did not detect signs of cancer. However, always consult with a healthcare professional for regular check-ups.")
