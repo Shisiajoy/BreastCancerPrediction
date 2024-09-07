@@ -48,17 +48,42 @@ def predict(image):
 # Streamlit app structure
 st.title("Breast Cancer Prediction App")
 
-# Explanation of how the app works
-st.info("This app uses a quantized neural network model to predict the presence of breast cancer in mammogram images.")
+# Adding a tooltip using HTML
+st.markdown("""
+<style>
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+}
 
-# Expandable section for more information
-with st.expander("Learn more about how the prediction is made"):
-    st.markdown("""
-    - **Model Details**: The model is a quantized neural network, optimized for inference on edge devices.
-    - **Input Preprocessing**: The uploaded image is resized to 150x150 pixels and converted to grayscale.
-    - **Prediction Threshold**: The model outputs a probability score between 0 and 1. A threshold of 0.5 is used to classify the result as either 'Cancer' or 'No Cancer'.
-    - **Normalization**: Images are normalized to scale pixel values between 0 and 1 before being fed into the model.
-    """)
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 160px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%; /* Position the tooltip above the text */
+  left: 50%;
+  margin-left: -80px; /* Center the tooltip */
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+</style>
+
+<div class="tooltip">Upload Image
+  <span class="tooltiptext">Upload a mammogram image in PNG, JPG, or JPEG format.</span>
+</div>
+""", unsafe_allow_html=True)
 
 # Upload image section
 uploaded_file = st.file_uploader("Upload a Mammogram Image", type=["png", "jpg", "jpeg"])
