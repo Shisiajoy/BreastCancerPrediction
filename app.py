@@ -48,7 +48,7 @@ def predict(image):
 # Streamlit app structure
 st.title("Breast Cancer Prediction App")
 
-# Adding a tooltip using HTML
+# Adding the tooltip using Streamlit directly within a Markdown widget
 st.markdown("""
 <style>
 .tooltip {
