@@ -7,56 +7,58 @@ from PIL import Image
 interpreter = tf.lite.Interpreter(model_path='Model/quantized_model.tflite')
 interpreter.allocate_tensors()
 
-# Get input and output details
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
-
-# Function to preprocess the uploaded image
-def preprocess_image(image):
-    img = image.resize((150, 150))  # Resize the image to 150x150
-    img = img.convert('L')  # Convert to grayscale
-    img_array = np.array(img)
-    img_array = np.expand_dims(img_array, axis=-1)  # Add channel dimension (1 for grayscale)
-    img_array = np.expand_dims(img_array, axis=0)   # Add batch dimension
-    img_array = img_array.astype('float32') / 255.0  # Normalize the image
-    return img_array
-
-# Function to predict using the quantized model
 def predict(image):
-    # Preprocess the image
-    input_data = preprocess_image(image)
-
-    # Set input tensor
-    interpreter.set_tensor(input_details[0]['index'], input_data)
-
+    input_details = interpreter.get_input_details()[0]
+    output_details = interpreter.get_output_details()[0]
+    
+    # Preprocess image
+    image = image.resize((150, 150)).convert('RGB')
+    image_array = np.array(image, dtype=np.float32) / 255.0
+    image_array = np.expand_dims(image_array, axis=0)
+    
     # Run inference
+    interpreter.set_tensor(input_details['index'], image_array)
     interpreter.invoke()
+    prediction = interpreter.get_tensor(output_details['index'])[0][0]
+    
+    # Determine the result
+    probability = prediction
+    label = "Cancer" if probability >= 0.5 else "No Cancer"
+    return label, probability
 
-    # Get the prediction
-    output_data = interpreter.get_tensor(output_details[0]['index'])
-    prediction_probability = output_data[0][0]
-
-    # Classify based on the threshold
-    threshold = 0.5
-    if prediction_probability >= threshold:
-        prediction_class = "Cancer"
-    else:
-        prediction_class = "No Cancer"
-
-    return prediction_class, prediction_probability
-
-# Streamlit app structure
 st.title("Breast Cancer Prediction App")
+st.write("Upload a Mammogram Image")
 
-# Upload image section
-uploaded_file = st.file_uploader("Upload a Mammogram Image", type=["png", "jpg", "jpeg"])
+uploaded_file = st.file_uploader("Drag and drop file here", type=['png', 'jpg', 'jpeg'])
 
 if uploaded_file is not None:
-    # Display the uploaded image
     image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    st.image(image, caption='Uploaded Image', use_column_width=True)
+    
+    label, probability = predict(image)
+    st.write(f"Prediction: {label} with a probability of {probability:.2f}")
 
-    # Predict and display the result
-    if st.button("Predict"):
-        prediction_class, prediction_probability = predict(image)
-        st.write(f"**Prediction:** {prediction_class} with a probability of {prediction_probability:.2f}")
+    # Add more detailed information
+    st.write("### Confidence Score")
+    st.write(f"The confidence score of the prediction is: {probability:.2f}")
+
+
+# Add a sidebar with additional information or instructions
+st.sidebar.header("Instructions")
+st.sidebar.write("1. Upload a mammogram image.")
+st.sidebar.write("2. The model will predict whether it shows signs of cancer or not.")
+st.sidebar.write("3. The result will include a probability score.")
+
+
+import matplotlib.pyplot as plt
+
+def plot_prediction_distribution(probability):
+    fig, ax = plt.subplots()
+    ax.bar(['Cancer', 'No Cancer'], [probability, 1 - probability])
+    ax.set_ylabel('Probability')
+    ax.set_title('Prediction Distribution')
+    st.pyplot(fig)
+
+# After getting the prediction
+plot_prediction_distribution(probability)
+
