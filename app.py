@@ -4,7 +4,7 @@ import numpy as np
 from PIL import Image
 
 # Load the quantized model
-interpreter = tf.lite.Interpreter(model_path='Model')
+interpreter = tf.lite.Interpreter(model_path='Model/quantized_model.tflite')
 interpreter.allocate_tensors()
 
 # Get input and output details
