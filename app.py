@@ -2,6 +2,7 @@ import streamlit as st
 import tensorflow as tf
 import numpy as np
 from PIL import Image
+import matplotlib.pyplot as plt
 
 # Load the quantized model
 interpreter = tf.lite.Interpreter(model_path='Model/quantized_model.tflite')
@@ -45,6 +46,33 @@ def predict(image):
 
     return prediction_class, prediction_probability
 
+
+def display_layer_activations(image, interpreter, input_details, output_details):
+    # Preprocess the image
+    input_data = preprocess_image(image)
+    
+    # Set input tensor
+    interpreter.set_tensor(input_details[0]['index'], input_data)
+
+    # Run inference
+    interpreter.invoke()
+
+    # Simulate displaying convolution layers
+    # Example: Let's assume we have 3 convolution layers to visualize
+    layer_activations = [input_data[0, :, :, 0]]  # Start with the original grayscale image
+
+    # Manually simulate activations (this part will differ based on your actual layers)
+    for i in range(3):
+        # Simulate a convolution layer by adding a random pattern to the image (for demonstration)
+        layer_activations.append(np.random.rand(150, 150))  # Placeholder for actual layer outputs
+
+    # Display the activations using Streamlit
+    st.write("### Convolution Layer Activations")
+    for i, activation in enumerate(layer_activations):
+        plt.imshow(activation, cmap='gray')
+        st.image(plt, caption=f"Layer {i+1} Activation", use_column_width=True)
+
+
 # Streamlit app structure
 st.title("Breast Cancer Prediction App")
 
@@ -60,3 +88,6 @@ if uploaded_file is not None:
     if st.button("Predict"):
         prediction_class, prediction_probability = predict(image)
         st.write(f"**Prediction:** {prediction_class} with a probability of {prediction_probability:.2f}")
+        
+        # Visualize intermediate layers
+        display_layer_activations(image, interpreter, input_details, output_details)
