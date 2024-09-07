@@ -1,3 +1,5 @@
+st.experimental_memo.clear()
+
 import streamlit as st
 import tensorflow as tf
 import numpy as np
