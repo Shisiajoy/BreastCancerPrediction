@@ -79,3 +79,7 @@ if uploaded_file is not None:
             st.warning("The model detected signs of cancer. Please consult a healthcare professional for further evaluation.")
         else:
             st.success("The model did not detect signs of cancer. However, always consult with a healthcare professional for regular check-ups.")
+
+
+  # Debug: Print raw prediction
+    st.write("Raw model output:", prediction)
