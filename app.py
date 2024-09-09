@@ -7,6 +7,7 @@ from PIL import Image
 interpreter = tf.lite.Interpreter(model_path='Model/quantized_model.tflite')
 interpreter.allocate_tensors()
 
+
 # Get input and output details
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
