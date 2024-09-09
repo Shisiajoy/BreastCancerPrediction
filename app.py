@@ -21,6 +21,7 @@ def preprocess_image(image):
     img_array = np.array(image) / 255.0  # Normalize the image
     img_array = np.expand_dims(img_array, axis=-1)  # Add channel dimension (1 for grayscale)
     img_array = np.expand_dims(img_array, axis=0)   # Add batch dimension
+    img_array = img_array.astype(np.float32)  # Ensure the array is of type FLOAT32
     return img_array
 
 # Function to predict using the quantized model
